@@ -16,9 +16,19 @@ class Agent:
         self.n_games = 0
         self.epsilon = 0 # randomness
         self.gamma = 0.9 # discount rate
-        self.memory = deque(maxlen=MAX_MEMORY) # popleft()
+
+        #--------------------------------------------------
+        # TRAINING PART
+        # self.memory = deque(maxlen=MAX_MEMORY) # popleft()
+        # self.model = Linear_QNet(11, 256, 3)
+        # self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
+        #---------------------------------------------------------
+
+        # Load the pre-trained model
         self.model = Linear_QNet(11, 256, 3)
-        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
+        self.model.load_state_dict(torch.load('D:\Programs\Python\PyGame\game_model\snake_game.pth'))
+        self.model.eval()  # Set the model to evaluation mode
+        self.trainer = None  # Since the model is pre-trained, we don't need the trainer
 
 
     def get_state(self, game):
@@ -95,6 +105,21 @@ class Agent:
             final_move[move] = 1
 
         return final_move
+    
+    def get_action_with_exploration(self, state, epsilon):
+        if random.random() < epsilon:
+            # Explore: Choose a random action
+            action = random.randint(0, 2)
+        else:
+            # Exploit: Choose the action with the highest Q-value
+            state0 = torch.tensor(state, dtype=torch.float)
+            prediction = self.model(state0)
+            action = torch.argmax(prediction).item()
+
+        final_move = [0, 0, 0]
+        final_move[action] = 1
+        return final_move
+
 
 
 def train():
@@ -139,6 +164,23 @@ def train():
             plot_mean_scores.append(mean_score)
             plot(plot_scores, plot_mean_scores)
 
+def play_game_with_pretrained_agent_and_exploration(epsilon):
+    agent = Agent()
+    game = SnakeGameAI()
+
+    while True:
+        state = agent.get_state(game)
+        action = agent.get_action_with_exploration(state, epsilon)  # Use epsilon-greedy action selection
+
+        reward, done, score = game.play_step(action)
+
+        if done:
+            print('Game Over! Score:', score)
+            game.reset()
+
 
 if __name__ == '__main__':
-    train()
+    #train()                   # ---- To train the model
+
+    exploration_epsilon = 0.1  # Set your desired exploration rate here
+    play_game_with_pretrained_agent_and_exploration(exploration_epsilon)

@@ -21,6 +21,7 @@ class Linear_QNet(nn.Module):
             os.makedirs(model_folder_path)
 
         filename = os.path.join(model_folder_path, file_name)
+        print("Saving Model")
         torch.save(self.state_dict(), filename)
 
 class QTrainer:
