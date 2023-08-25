@@ -26,7 +26,7 @@ class Agent:
 
         # Load the pre-trained model
         self.model = Linear_QNet(11, 256, 3)
-        self.model.load_state_dict(torch.load('D:\Programs\Python\PyGame\game_model\snake_game.pth'))
+        self.model.load_state_dict(torch.load('./game_model/snake_game.pth'))
         self.model.eval()  # Set the model to evaluation mode
         self.trainer = None  # Since the model is pre-trained, we don't need the trainer
 
